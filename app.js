@@ -48,7 +48,7 @@ var bot = new builder.UniversalBot(connector);
 //     session.send('Sorry, I did not understand \'%s\'.', session.message.text);
 // });
 
-bot.dialog('/', [greeting, specialRequirements, requirementsCheck]);  
+bot.dialog('/', [greeting, specialRequirements, drivingLicenceNo, testType]);  
 
 function hi(session){
     builder.Prompts.text(session,"Hi")
@@ -69,3 +69,14 @@ function requirementsCheck(session, results){
     //Code here to check if the user should continue
 }
 
+function drivingLicenceNo(session, results){
+    //Get specialRequirements responce from response to previous question
+    session.userData.specialRequirements = results.response;
+
+    builder.Prompts.number(session, 'What is Driving Licence No.?');
+}
+
+function testType(session, results){
+
+    builder.Prompts.choice(session, 'What type of test would you like to book?', "Motorcar|Small Sized Motorcycle (120cc to 125cc)|Medium Sized Motorcycle (395cc and at least 25KW to 35KW power output)|Large Sized Motorcycle (at least 595cc and at least 40KW)|Moped|Taxi", {listStyle: builder.ListStyle.button});
+}
