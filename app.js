@@ -49,6 +49,7 @@ var bot = new builder.UniversalBot(connector);
 // });
 
 bot.dialog('/', [greeting, specialRequirements, requirementsCheck]);  
+bot.dialog('bookTest', []);
 
 function hi(session){
     builder.Prompts.text(session,"Hi")
@@ -66,6 +67,22 @@ function specialRequirements(session, results){
 }
 
 function requirementsCheck(session, results){
-    //Code here to check if the user should continue
+    if(results.response.index == 0){
+        session.endDialog("Sorry you cannot book online. Please call 0011223344");
+    }else{
+        session.beginDialog('bookTest');
+    }
+}
+
+function dateOfBirth(session, results){
+    builder.Prompts.text(session, "Please enter your Date of Birth in format dd/mm/yyyy");
+}
+
+function carReg(session, results){
+    builder.Prompts.text(session,"Please enter your car registration");
+}
+
+function licenceNo(session, results){
+    builder.Prompts.text(session,'Whats your driving licence no?');
 }
 
