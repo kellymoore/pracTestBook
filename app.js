@@ -48,9 +48,24 @@ var bot = new builder.UniversalBot(connector);
 //     session.send('Sorry, I did not understand \'%s\'.', session.message.text);
 // });
 
-bot.dialog('/', hi);  
+bot.dialog('/', [greeting, specialRequirements, requirementsCheck]);  
 
 function hi(session){
     builder.Prompts.text(session,"Hi")
+}
+
+function greeting(session){
+    builder.Prompts.text(session, "Hello. What is your name?");
+}
+
+function specialRequirements(session, results){
+    //Get name from response to previous question
+    session.userData.name = results.response;
+
+    builder.Prompts.choice(session, 'Do you have any special requirements?', "Yes|No", {listStyle: builder.ListStyle.button});
+}
+
+function requirementsCheck(session, results){
+    //Code here to check if the user should continue
 }
 
