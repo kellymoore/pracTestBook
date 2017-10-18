@@ -49,19 +49,22 @@ var bot = new builder.UniversalBot(connector);
 // });
 
 bot.dialog('/', [greeting, specialRequirements, requirementsCheck]);  
-bot.dialog('bookTest', []);
+bot.dialog('bookTest', [drivingLicenceNo, dateOfBirth, testType, testCenter, availableDates]);
+bot.dialog('moreTestCenters', [moreTestCentersCountry, moreTestCenters]);
+bot.dialog('appointmentTime', []);
 
 function hi(session){
     builder.Prompts.text(session,"Hi")
 }
 
 function greeting(session){
+    //This will change to options - Book theory, book practical, change/cancel test
     builder.Prompts.text(session, "Hello. What is your name?");
 }
 
 function specialRequirements(session, results){
-    //Get name from response to previous question
     session.userData.name = results.response;
+    session.send("We provide a number of facilities for candidates with disabilities. It is important that you let us know if you: \n - are deaf or have severe hearing difficulties; \n - are in any way restricted in your movements \n - have any physical disability.");
 
     builder.Prompts.choice(session, 'Do you have any special requirements?', "Yes|No", {listStyle: builder.ListStyle.button});
 }
@@ -74,26 +77,85 @@ function requirementsCheck(session, results){
     }
 }
 
+function drivingLicenceNo(session, results){
+    builder.Prompts.number(session, 'What is your Driving Licence No.?');
+}
+
 function dateOfBirth(session, results){
     builder.Prompts.text(session, "Please enter your Date of Birth in format dd/mm/yyyy");
+}
+
+function testType(session, results){
+    session.userData.dob = results.response;
+    builder.Prompts.choice(session, 'What type of test would you like to book?', "Motorcar|Small Sized Motorcycle (120cc to 125cc)|Medium Sized Motorcycle (395cc and at least 25KW to 35KW power output)|Large Sized Motorcycle (at least 595cc and at least 40KW)|Moped|Taxi", {listStyle: builder.ListStyle.button});
+}
+
+//Test Center
+function testCenter(session, results){
+    session.userData.testType = results.response.entity;
+    builder.Prompts.choice(session, "Please select a test centre. The 3 test centers nearest to you that perform "+session.userData.testType+ "tests are:","Belfast - Balmoral|Belfast - Dill Road | Mallusk | More ", {listStyle: builder.ListStyle.button} );
+}
+
+function testCenterCheck(session, results){
+    if (results.response.entity == "More"){
+        //Display more test centers
+    }else{
+        //move onto next dialog
+    }
+}
+
+function moreTestCentersCountry(){
+
+}
+
+function moreTestCenters(session){
+    builder.Prompts.choice(session, 'What type of test would you like to book?', "Motorcar|Small Sized Motorcycle (120cc to 125cc)|Medium Sized Motorcycle (395cc and at least 25KW to 35KW power output)|Large Sized Motorcycle (at least 595cc and at least 40KW)|Moped|Taxi", {listStyle: builder.ListStyle.button});    
+}
+
+//Avilable Dates or choose others
+function availableDates(session, results){
+    session.userData.testCenter = results.response.entity;
+    
+    builder.Prompts.choice(session,"Please select an appointment time. The next available appointments at "+session.userData.testCenter+ "on 26/10/2017 are:","10.30am | 11.45am | 2.30pm | 3.15pm" ,  {listStyle: 3});
+   
+}
+
+//Payment
+function payment(session, results){
+    
 }
 
 function carReg(session, results){
     builder.Prompts.text(session,"Please enter your car registration");
 }
 
-function licenceNo(session, results){
-    builder.Prompts.text(session,'Whats your driving licence no?');
+//Confirmation
+function confirmation(session, results){
+    var card = createReceiptCard(session);
+    var msg = new builder.Message(session).addAttachment(card);
+    
+    session.send(msg);
+}
+function createReceiptCard(session) {
+    return new builder.ReceiptCard(session)
+        .title('John Doe')
+        .facts([
+            builder.Fact.create(session, '1234', 'Order Number'),
+            builder.Fact.create(session, 'VISA 5555-****', 'Payment Method')
+        ])
+        .items([
+            builder.ReceiptItem.create(session, '$ 38.45', 'Data Transfer')
+                .quantity(368),
+                //.image(builder.CardImage.create(session, 'https://github.com/amido/azure-vector-icons/raw/master/renders/traffic-manager.png')),
+            builder.ReceiptItem.create(session, '$ 45.00', 'App Service')
+                .quantity(720),
+                //.image(builder.CardImage.create(session, 'https://github.com/amido/azure-vector-icons/raw/master/renders/cloud-service.png'))
+        ])
+        .tax('$ 7.50')
+        .total('$ 90.95')
+        .buttons([
+            builder.CardAction.openUrl(session, 'https://azure.microsoft.com/en-us/pricing/', 'More Information')
+                .image('https://raw.githubusercontent.com/amido/azure-vector-icons/master/renders/microsoft-azure.png')
+        ]);
 }
 
-function drivingLicenceNo(session, results){
-    //Get specialRequirements responce from response to previous question
-    session.userData.specialRequirements = results.response;
-
-    builder.Prompts.number(session, 'What is Driving Licence No.?');
-}
-
-function testType(session, results){
-
-    builder.Prompts.choice(session, 'What type of test would you like to book?', "Motorcar|Small Sized Motorcycle (120cc to 125cc)|Medium Sized Motorcycle (395cc and at least 25KW to 35KW power output)|Large Sized Motorcycle (at least 595cc and at least 40KW)|Moped|Taxi", {listStyle: builder.ListStyle.button});
-}
