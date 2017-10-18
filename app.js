@@ -49,17 +49,12 @@ var bot = new builder.UniversalBot(connector);
 // });
 
 bot.dialog('/', [greeting, specialRequirements, requirementsCheck]);  
-bot.dialog('bookTest', [drivingLicenceNo, dateOfBirth, testType, testCenter, availableDates]);
-bot.dialog('moreTestCenters', [moreTestCentersCountry, moreTestCenters]);
-bot.dialog('appointmentTime', []);
-
-function hi(session){
-    builder.Prompts.text(session,"Hi")
-}
+bot.dialog('bookTest', [drivingLicenceNo, dateOfBirth, testType, testCenter, availableDates, carReg, payment, confirmation]);
+bot.dialog('confirmation', confirmation);
 
 function greeting(session){
     //This will change to options - Book theory, book practical, change/cancel test
-    builder.Prompts.text(session, "Hello. What is your name?");
+    builder.Prompts.text(session, "Hello. How can I help you today?");
 }
 
 function specialRequirements(session, results){
@@ -82,6 +77,7 @@ function drivingLicenceNo(session, results){
 }
 
 function dateOfBirth(session, results){
+    session.userData.drivingLicenceNo = "12345678";
     builder.Prompts.text(session, "Please enter your Date of Birth in format dd/mm/yyyy");
 }
 
@@ -105,7 +101,7 @@ function testCenterCheck(session, results){
 }
 
 function moreTestCentersCountry(){
-
+    
 }
 
 function moreTestCenters(session){
@@ -117,16 +113,89 @@ function availableDates(session, results){
     session.userData.testCenter = results.response.entity;
     
     builder.Prompts.choice(session,"Please select an appointment time. The next available appointments at "+session.userData.testCenter+ "on 26/10/2017 are:","10.30am | 11.45am | 2.30pm | 3.15pm" ,  {listStyle: 3});
-   
+}
+
+function carReg(session, results){
+    session.userData.appointmentTime = results.response.entity;
+    builder.Prompts.text(session,"Please enter the registration of the car you wish to take the exam in");
 }
 
 //Payment
 function payment(session, results){
+    var adaptiveCardMessage = new builder.Message(session)
+    .addAttachment({
+        contentType: "application/vnd.microsoft.card.adaptive",
+        content: {
+            type: "AdaptiveCard",
+            'body': [
+                {
+                    'type': 'TextBlock',
+                    'text': 'Payment',
+                    'weight': 'bolder',
+                    'size': 'large'
+                },
+                {
+                    'type': 'TextBlock',
+                    'text': 'Card type:'
+                },
+                {
+                    "type": "Input.ChoiceSet",
+                    "id": "myColor",
+                    "style": "compact",
+                    "isMultiSelect": false,
+                    "value": "1",
+                    "choices": [
+                        {
+                            "title": "Visa Debit",
+                            "value": "1"
+                        },
+                        {
+                            "title": "Visa Credit",
+                            "value": "2"
+                        },
+                        {
+                            "title": "MasterCard",
+                            "value": "3"
+                        }
+                    ]
+                },
+                {
+                    'type': 'TextBlock',
+                    'text': 'Card Number:'
+                },
+                {
+                    'type': 'Input.Text',
+                    'id': 'destination',
+                    'placeholder': '0000 0000 0000 0000',
+                    'style': 'text'
+                },
+                {
+                    'type': 'TextBlock',
+                    'text': 'Security Code:'
+                },
+                {
+                    'type': 'Input.Text',
+                    'id': 'nights',
+                    'min': 1,
+                    'max': 60,
+                }
+            ],
+            'actions': [
+                {
+                    'type': 'Action.OpenUrl',
+                    'title': 'Pay',
+                    'data': {
+                        'type': 'hotelSearch'
+                    }
+                }
+            ]
     
-}
+        }
+    });
 
-function carReg(session, results){
-    builder.Prompts.text(session,"Please enter your car registration");
+    session.send(adaptiveCardMessage);
+    session.beginDialog('confirmation')
+
 }
 
 //Confirmation
@@ -136,23 +205,25 @@ function confirmation(session, results){
     
     session.send(msg);
 }
+
 function createReceiptCard(session) {
     return new builder.ReceiptCard(session)
-        .title('John Doe')
+        .title('Confirmation of Appointment')
         .facts([
-            builder.Fact.create(session, '1234', 'Order Number'),
-            builder.Fact.create(session, 'VISA 5555-****', 'Payment Method')
+            builder.Fact.create(session, '12345', 'Appointment Number'),
+            builder.Fact.create(session, session.userData.drivingLicenceNo, 'Driving Licence No.'),
+            builder.Fact.create(session, 'QWE1234', 'Car Reg')
         ])
         .items([
-            builder.ReceiptItem.create(session, '$ 38.45', 'Data Transfer')
+            builder.ReceiptItem.create(session, session.userData.testCenter, 'Test Center')
                 .quantity(368),
-                //.image(builder.CardImage.create(session, 'https://github.com/amido/azure-vector-icons/raw/master/renders/traffic-manager.png')),
-            builder.ReceiptItem.create(session, '$ 45.00', 'App Service')
+            builder.ReceiptItem.create(session, '26/10/2017', 'Date')
                 .quantity(720),
-                //.image(builder.CardImage.create(session, 'https://github.com/amido/azure-vector-icons/raw/master/renders/cloud-service.png'))
+            builder.ReceiptItem.create(session, session.userData.appointmentTime, 'Time')
+                .quantity(720),
         ])
-        .tax('$ 7.50')
-        .total('$ 90.95')
+        .tax('£9.10')
+        .total('£ 45.50')
         .buttons([
             builder.CardAction.openUrl(session, 'https://azure.microsoft.com/en-us/pricing/', 'More Information')
                 .image('https://raw.githubusercontent.com/amido/azure-vector-icons/master/renders/microsoft-azure.png')
