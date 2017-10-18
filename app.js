@@ -48,7 +48,7 @@ var bot = new builder.UniversalBot(connector);
 //     session.send('Sorry, I did not understand \'%s\'.', session.message.text);
 // });
 
-bot.dialog('/', [greeting, specialRequirements, drivingLicenceNo, testType]);  
+bot.dialog('/', [greeting, specialRequirements, requirementsCheck]);  
 
 function hi(session){
     builder.Prompts.text(session,"Hi")
