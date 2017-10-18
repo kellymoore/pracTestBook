@@ -53,9 +53,6 @@ bot.dialog('bookTest', [drivingLicenceNo, dateOfBirth, testType, testCenter, ava
 bot.dialog('moreTestCenters', [moreTestCentersCountry, moreTestCenters]);
 bot.dialog('appointmentTime', []);
 
-function hi(session){
-    builder.Prompts.text(session,"Hi")
-}
 
 function greeting(session){
     //This will change to options - Book theory, book practical, change/cancel test
@@ -64,14 +61,14 @@ function greeting(session){
 
 function specialRequirements(session, results){
     session.userData.name = results.response;
-    session.send("We provide a number of facilities for candidates with disabilities. It is important that you let us know if you: \n - are deaf or have severe hearing difficulties; \n - are in any way restricted in your movements \n - have any physical disability.");
+    session.send("Hi "+session.userData.name+", \n \n We provide a number of facilities for candidates with disabilities. It is important that you let us know if you: \n - are deaf or have severe hearing difficulties; \n - are in any way restricted in your movements \n - have any physical disability.");
 
     builder.Prompts.choice(session, 'Do you have any special requirements?', "Yes|No", {listStyle: builder.ListStyle.button});
 }
 
 function requirementsCheck(session, results){
     if(results.response.index == 0){
-        session.endDialog("Sorry you cannot book online. Please call 0011223344");
+        session.endDialog("Unfortunately you cannot use this online service to book. To book a test please contact our Call Centre on 0345 247 2471.");
     }else{
         session.beginDialog('bookTest');
     }
@@ -82,7 +79,7 @@ function drivingLicenceNo(session, results){
 }
 
 function dateOfBirth(session, results){
-    builder.Prompts.text(session, "Please enter your Date of Birth in format dd/mm/yyyy");
+    builder.Prompts.text(session, "Please confirm your Date of Birth (dd/mm/yyyy)");
 }
 
 function testType(session, results){
@@ -93,7 +90,7 @@ function testType(session, results){
 //Test Center
 function testCenter(session, results){
     session.userData.testType = results.response.entity;
-    builder.Prompts.choice(session, "Please select a test centre. The 3 test centers nearest to you that perform "+session.userData.testType+ "tests are:","Belfast - Balmoral|Belfast - Dill Road | Mallusk | More ", {listStyle: builder.ListStyle.button} );
+    builder.Prompts.choice(session, "Please select a test centre. \nThe test centres nearest to you that perform "+session.userData.testType+ " tests are:","Belfast - Balmoral|Belfast - Dill Road | Mallusk | More ", {listStyle: builder.ListStyle.button} );
 }
 
 function testCenterCheck(session, results){
@@ -116,7 +113,7 @@ function moreTestCenters(session){
 function availableDates(session, results){
     session.userData.testCenter = results.response.entity;
     
-    builder.Prompts.choice(session,"Please select an appointment time. The next available appointments at "+session.userData.testCenter+ "on 26/10/2017 are:","10.30am | 11.45am | 2.30pm | 3.15pm" ,  {listStyle: 3});
+    builder.Prompts.choice(session,"The next available date for a "+session.userData.testType+" test at "+session.userData.testCenter+" is 26/10/2017. Please select an appointment time:","10.30am | 11.45am | 2.30pm | 3.15pm" ,  {listStyle: 3});
    
 }
 
