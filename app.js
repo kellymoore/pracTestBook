@@ -113,7 +113,7 @@ function moreTestCenters(session){
 function availableDates(session, results){
     session.userData.testCenter = results.response.entity;
     
-    builder.Prompts.choice(session,"The next available date for a "+session.userData.testType+" test at "+session.userData.testCenter+" is 26/10/2017. Please select an appointment time:","10.30am | 11.45am | 2.30pm | 3.15pm" ,  {listStyle: 3});
+    builder.Prompts.choice(session,"The next available date for a "+session.userData.testType+" test at "+session.userData.testCenter+" is 26/10/2017.  \n \n Please select an appointment time:","10.30am | 11.45am | 2.30pm | 3.15pm" ,  {listStyle: 3});
    
 }
 
